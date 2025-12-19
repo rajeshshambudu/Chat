@@ -7,6 +7,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* 🔥 Replace with your Firebase config */
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -26,8 +27,8 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-
-
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 
 const app = initializeApp(firebaseConfig);
