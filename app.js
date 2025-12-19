@@ -1,86 +1,106 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, onChildRemoved, query, limitToLast, orderByChild, remove, onValue, onDisconnect, set } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {
+  getDatabase, ref, push, onChildAdded,
+  onValue, onDisconnect, set, query,
+  orderByChild, limitToLast, remove
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Initialize Lucide Icons
-lucide.createIcons();
+/* 🔥 Replace with your Firebase config */
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyB4RMbgUU5rM9K-RlGreZefwwrIj33ye-c",
+  authDomain: "chatwithme-890bd.firebaseapp.com",
+  projectId: "chatwithme-890bd",
+  storageBucket: "chatwithme-890bd.firebasestorage.app",
+  messagingSenderId: "318766387192",
+  appId: "1:318766387192:web:b7ecf55514cd752086d00d",
+  measurementId: "G-N49F04413Q"
 };
+
+// Initialize Firebase
+
+
+
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const messagesRef = ref(db, 'messages');
 
-// 1. User Logic
-let user = localStorage.getItem('nexusUser') || prompt("Enter Call-sign:") || "Guest_" + Math.floor(Math.random() * 1000);
-localStorage.setItem('nexusUser', user);
+const messagesRef = ref(db, "messages");
+const presenceRef = ref(db, "presence");
 
-// 2. Presence Logic (X Online)
-const userPresenceRef = ref(db, 'presence/' + user);
-const presenceFolderRef = ref(db, 'presence');
-const connectedRef = ref(db, '.info/connected');
+/* 🎭 Stranger Name */
+const adjectives = ["Shadow","Neon","Silent","Cosmic","Ghost"];
+const animals = ["Fox","Wolf","Tiger","Hawk","Byte"];
+const username = `${adjectives[Math.floor(Math.random()*5)]}${animals[Math.floor(Math.random()*5)]}_${Math.floor(Math.random()*1000)}`;
 
-onValue(connectedRef, (snap) => {
-    if (snap.val() === true) {
-        onDisconnect(userPresenceRef).remove();
-        set(userPresenceRef, true);
+/* 👥 Presence */
+const myPresence = ref(db, "presence/" + username);
+set(myPresence, true);
+onDisconnect(myPresence).remove();
+
+onValue(presenceRef, snap => {
+  const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+  document.getElementById("user-count").textContent =
+    `${count} strangers online`;
+});
+
+/* 💬 Send Message */
+const chat = document.getElementById("chat-window");
+const input = document.getElementById("msg-input");
+let lastSent = 0;
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text || text.length > 300) return;
+  const now = Date.now();
+  if (now - lastSent < 1000) return;
+  lastSent = now;
+
+  push(messagesRef, { user: username, text, time: now });
+  input.value = "";
+
+  // Keep last 50 messages
+  onValue(query(messagesRef, orderByChild("time")), snap => {
+    const msgs = snap.val();
+    if (!msgs) return;
+    const keys = Object.keys(msgs);
+    if (keys.length > 50) {
+      remove(ref(db, "messages/" + keys[0]));
     }
+  }, { onlyOnce: true });
+}
+
+document.getElementById("send-btn").onclick = sendMessage;
+input.addEventListener("keydown", e => e.key === "Enter" && sendMessage());
+
+/* 📡 Receive Messages */
+const q = query(messagesRef, orderByChild("time"), limitToLast(50));
+onChildAdded(q, snap => {
+  const { user, text, time } = snap.val();
+  const div = document.createElement("div");
+  div.className = "msg " + (user === username ? "sent" : "received");
+  div.textContent = `${user}: ${text}`;
+
+  const small = document.createElement("small");
+  small.textContent = new Date(time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  div.appendChild(small);
+
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
 });
 
-onValue(presenceFolderRef, (snap) => {
-    document.getElementById('user-count').innerText = `${snap.size || 0} Operatives Online`;
-});
-
-// 3. Message Logic
-const chatWindow = document.getElementById('chat-window');
-const msgInput = document.getElementById('msg-input');
-
-const postMessage = () => {
-    if (msgInput.value.trim()) {
-        push(messagesRef, { user, text: msgInput.value, timestamp: Date.now() });
-        msgInput.value = "";
-    }
+/* 😄 Emoji Picker */
+const picker = picmo.createPicker({ rootElement: document.getElementById("picker-container") });
+document.getElementById("emoji-btn").onclick = () => {
+  const p = document.getElementById("picker-container");
+  p.style.display = p.style.display === "block" ? "none" : "block";
 };
-
-document.getElementById('send-btn').onclick = postMessage;
-msgInput.onkeypress = (e) => e.key === 'Enter' && postMessage();
-
-// 4. Stream Messages
-const q = query(messagesRef, orderByChild('timestamp'), limitToLast(50));
-onChildAdded(q, (snapshot) => {
-    const { user: author, text, timestamp } = snapshot.val();
-    const isMe = author === user;
-    const timeStr = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `msg ${isMe ? 'sent' : 'received'}`;
-    msgDiv.innerHTML = `<strong>${author}</strong>${text}<small>${timeStr}</small>`;
-    
-    chatWindow.appendChild(msgDiv);
-    chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
-});
-
-// 5. Admin Cleanup
-document.getElementById('clear-btn').onclick = () => {
-    if (prompt("Admin Authorization Required:") === "admin123") remove(messagesRef);
-};
-onChildRemoved(messagesRef, () => chatWindow.innerHTML = "");
-
-// 6. Emoji Picker
-const picker = picmo.createPicker({ rootElement: document.getElementById('picker-container') });
-document.getElementById('emoji-btn').onclick = () => {
-    const container = document.getElementById('picker-container');
-    container.style.display = container.style.display === 'block' ? 'none' : 'block';
-};
-picker.addEventListener('emoji:select', (e) => {
-    msgInput.value += e.emoji;
-    document.getElementById('picker-container').style.display = 'none';
-});
+picker.addEventListener("emoji:select", e => { input.value += e.emoji; });
