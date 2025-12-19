@@ -1,45 +1,45 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Nexus Chat | Secure Channel</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nexus Stranger Chat</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
-    <div class="glass-app">
-        <header>
-            <div class="brand">
-                <div class="status-blob"></div>
-                <div class="brand-info">
-                    <h1>Nexus Chat</h1>
-                    <span id="user-count">Connecting...</span>
-                </div>
-            </div>
-            <button id="clear-btn" class="admin-action" title="Clear History">
-                <i data-lucide="trash-2"></i>
-            </button>
-        </header>
-
-        <div id="chat-window" class="chat-viewport">
-            </div>
-
-        <div id="picker-container"></div>
-
-        <div class="input-container">
-            <button id="emoji-btn" class="util-btn"><i data-lucide="smile"></i></button>
-            <div class="input-field">
-                <input type="text" id="msg-input" placeholder="Type a secure message..." autocomplete="off">
-            </div>
-            <button id="send-btn" class="send-btn"><i data-lucide="send"></i></button>
-        </div>
+<div class="glass-app">
+  <header>
+    <div class="brand">
+      <div class="status-blob"></div>
+      <div>
+        <h1>Nexus Chat</h1>
+        <span id="user-count">Connecting...</span>
+      </div>
     </div>
+  </header>
 
-    <script src="https://cdn.jsdelivr.net/npm/picmo@latest/dist/umd/index.js"></script>
-    <script type="module" src="app.js"></script>
+  <div id="rules">
+    ⚠️ Public stranger chat. Be respectful. No personal info.
+  </div>
+
+  <div id="chat-window" class="chat-viewport"></div>
+
+  <div id="picker-container"></div>
+
+  <div class="input-container">
+    <button id="emoji-btn">😊</button>
+    <input id="msg-input" placeholder="Type a message..." />
+    <button id="send-btn">➤</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/picmo@latest/dist/umd/index.js"></script>
+<script type="module" src="app.js"></script>
+<script>lucide.createIcons()</script>
 </body>
 </html>
+
