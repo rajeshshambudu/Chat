@@ -10,7 +10,7 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyB4RMbgUU5rM9K-RlGreZefwwrIj33ye-c",
   authDomain: "chatwithme-890bd.firebaseapp.com",
-  databaseURL: "https://chatwithme-890bd-default-rtdb.asia-southeast1.firebasedatabase.app/", // ✅ important!
+  databaseURL: "https://chatwithme-890bd-default-rtdb.asia-southeast1.firebasedatabase.app", // ✅ important!
   projectId: "chatwithme-890bd",
   storageBucket: "chatwithme-890bd.appspot.com",
   messagingSenderId: "318766387192",
