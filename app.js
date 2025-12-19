@@ -42,7 +42,7 @@ onDisconnect(myPresence).remove();
 // Update online count
 onValue(presenceRef, snap => {
   const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-  document.getElementById("user-count").textContent = `${count} strangers online`;
+  document.getElementById("user-count").textContent = `DreamLine: ${count} strangers online`;
 });
 
 // 💬 Chat elements
