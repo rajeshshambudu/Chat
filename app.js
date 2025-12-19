@@ -6,18 +6,19 @@ import {
   orderByChild, limitToLast, remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// 🔥 Firebase config
+// 🔥 Firebase config (make sure databaseURL is correct)
 const firebaseConfig = {
   apiKey: "AIzaSyB4RMbgUU5rM9K-RlGreZefwwrIj33ye-c",
   authDomain: "chatwithme-890bd.firebaseapp.com",
+  databaseURL: "https://chatwithme-890bd-default-rtdb.asia-southeast1.firebasedatabase.app/", // ✅ important!
   projectId: "chatwithme-890bd",
-  storageBucket: "chatwithme-890bd.firebasestorage.app",
+  storageBucket: "chatwithme-890bd.appspot.com",
   messagingSenderId: "318766387192",
   appId: "1:318766387192:web:b7ecf55514cd752086d00d",
   measurementId: "G-N49F04413Q"
 };
 
-// Initialize Firebase once
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -25,12 +26,12 @@ const db = getDatabase(app);
 const messagesRef = ref(db, "messages");
 const presenceRef = ref(db, "presence");
 
-// 🎭 Generate random stranger username
+// 🎭 Random username
 const adjectives = ["Shadow","Neon","Silent","Cosmic","Ghost"];
 const animals = ["Fox","Wolf","Tiger","Hawk","Byte"];
 const username = `${adjectives[Math.floor(Math.random()*adjectives.length)]}${animals[Math.floor(Math.random()*animals.length)]}_${Math.floor(Math.random()*1000)}`;
 
-// Random color for this user
+// Random color for user messages
 const userColor = `hsl(${Math.floor(Math.random()*360)}, 70%, 60%)`;
 
 // 👥 Presence tracking
@@ -73,9 +74,9 @@ function sendMessage() {
 document.getElementById("send-btn").onclick = sendMessage;
 input.addEventListener("keydown", e => e.key === "Enter" && sendMessage());
 
-// 📡 Receive messages (last 50)
-const q = query(messagesRef, orderByChild("time"), limitToLast(50));
-onChildAdded(q, snap => {
+// 📡 Receive last 50 messages
+const messagesQuery = query(messagesRef, orderByChild("time"), limitToLast(50));
+onChildAdded(messagesQuery, snap => {
   const { user, text, time, color } = snap.val();
 
   const div = document.createElement("div");
@@ -96,7 +97,7 @@ onChildAdded(q, snap => {
   }, { onlyOnce: true });
 });
 
-// 🎉 User joined / left notifications
+// 🎉 User joined notifications
 onChildAdded(presenceRef, snap => {
   if (snap.key !== username) {
     const div = document.createElement("div");
@@ -107,11 +108,6 @@ onChildAdded(presenceRef, snap => {
     chat.appendChild(div);
     chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
   }
-});
-
-onChildAdded(presenceRef, snap => {
-  // This will trigger when a user disconnects automatically
-  // Firebase doesn’t have a built-in 'childRemoved' listener in the CDN, so we skip for simplicity
 });
 
 // 😄 Emoji picker
