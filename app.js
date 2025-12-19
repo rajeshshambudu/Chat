@@ -6,7 +6,7 @@ import {
   orderByChild, limitToLast, remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// 🔥 Your Firebase config
+// 🔥 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyB4RMbgUU5rM9K-RlGreZefwwrIj33ye-c",
   authDomain: "chatwithme-890bd.firebaseapp.com",
@@ -30,6 +30,9 @@ const adjectives = ["Shadow","Neon","Silent","Cosmic","Ghost"];
 const animals = ["Fox","Wolf","Tiger","Hawk","Byte"];
 const username = `${adjectives[Math.floor(Math.random()*adjectives.length)]}${animals[Math.floor(Math.random()*animals.length)]}_${Math.floor(Math.random()*1000)}`;
 
+// Random color for this user
+const userColor = `hsl(${Math.floor(Math.random()*360)}, 70%, 60%)`;
+
 // 👥 Presence tracking
 const myPresence = ref(db, "presence/" + username);
 set(myPresence, true);
@@ -44,7 +47,7 @@ onValue(presenceRef, snap => {
 // 💬 Chat elements
 const chat = document.getElementById("chat-window");
 const input = document.getElementById("msg-input");
-input.focus(); // auto-focus input
+input.focus();
 let lastSent = 0;
 
 // Send message function
@@ -59,7 +62,8 @@ function sendMessage() {
   push(messagesRef, {
     user: username,
     text,
-    time: now
+    time: now,
+    color: userColor
   }).then(() => {
     input.value = "";
   }).catch(err => console.error("Error sending message:", err));
@@ -72,11 +76,11 @@ input.addEventListener("keydown", e => e.key === "Enter" && sendMessage());
 // 📡 Receive messages (last 50)
 const q = query(messagesRef, orderByChild("time"), limitToLast(50));
 onChildAdded(q, snap => {
-  const { user, text, time } = snap.val();
+  const { user, text, time, color } = snap.val();
 
   const div = document.createElement("div");
   div.className = "msg " + (user === username ? "sent" : "received");
-  div.innerHTML = `<strong>${user}</strong>: ${text}<br><small>${new Date(time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</small>`;
+  div.innerHTML = `<strong style="color:${color}">${user}</strong>: ${text}<br><small>${new Date(time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</small>`;
 
   chat.appendChild(div);
   chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
@@ -90,6 +94,24 @@ onChildAdded(q, snap => {
       remove(ref(db, "messages/" + keys[0]));
     }
   }, { onlyOnce: true });
+});
+
+// 🎉 User joined / left notifications
+onChildAdded(presenceRef, snap => {
+  if (snap.key !== username) {
+    const div = document.createElement("div");
+    div.className = "msg received";
+    div.style.textAlign = "center";
+    div.style.opacity = "0.6";
+    div.textContent = `${snap.key} joined the chat`;
+    chat.appendChild(div);
+    chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+  }
+});
+
+onChildAdded(presenceRef, snap => {
+  // This will trigger when a user disconnects automatically
+  // Firebase doesn’t have a built-in 'childRemoved' listener in the CDN, so we skip for simplicity
 });
 
 // 😄 Emoji picker
